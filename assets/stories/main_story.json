@@ -1,0 +1,66 @@
+{
+  "intro": {
+    "id": "intro",
+    "text": "You find yourself standing at the edge of a mystical forest. Ancient trees tower above you, their branches forming a natural cathedral. The air shimmers with possibility, and you feel a gentle pull toward two distinct paths ahead. Each path seems to whisper its own invitation.",
+    "choices": [
+      {
+        "label": "🌸 Take the sunlit path lined with blooming flowers",
+        "nextSceneId": "path_light"
+      },
+      {
+        "label": "🌙 Follow the moonlit trail through the shadows",
+        "nextSceneId": "path_shadow"
+      },
+      {
+        "label": "💫 Sit quietly and listen to the forest's wisdom",
+        "nextSceneId": "path_meditation"
+      }
+    ],
+    "moodEffect": "curious"
+  },
+  "path_light": {
+    "id": "path_light",
+    "text": "The sunlit path welcomes you with warmth and vibrant colors. Butterflies dance around blooming wildflowers, and a gentle breeze carries the sweet scent of jasmine. As you walk, you notice a small clearing ahead where a crystal-clear stream flows peacefully.",
+    "choices": [
+      {
+        "label": "🦋 Follow the butterflies to a hidden garden",
+        "nextSceneId": "garden_discovery"
+      },
+      {
+        "label": "💧 Kneel by the stream and reflect",
+        "nextSceneId": "stream_reflection"
+      }
+    ],
+    "moodEffect": "uplifted"
+  },
+  "path_shadow": {
+    "id": "path_shadow",
+    "text": "The moonlit path leads you through a realm of silver shadows and gentle mysteries. Fireflies create tiny lanterns in the darkness, and you hear the soft hooting of a wise owl. The path winds deeper into the forest, where ancient stones form a circle.",
+    "choices": [
+      {
+        "label": "🦉 Approach the wise owl for guidance",
+        "nextSceneId": "owl_wisdom"
+      },
+      {
+        "label": "🗿 Enter the ancient stone circle",
+        "nextSceneId": "stone_circle"
+      }
+    ],
+    "moodEffect": "contemplative"
+  },
+  "path_meditation": {
+    "id": "path_meditation",
+    "text": "You settle into a comfortable position and close your eyes. The forest seems to embrace you with its gentle sounds - rustling leaves, distant bird songs, and the soft whisper of wind. Gradually, you feel a deep sense of peace washing over you.",
+    "choices": [
+      {
+        "label": "🧘‍♀️ Continue meditating and go deeper",
+        "nextSceneId": "deep_meditation"
+      },
+      {
+        "label": "🌱 Open your eyes and notice what has changed",
+        "nextSceneId": "awakened_awareness"
+      }
+    ],
+    "moodEffect": "peaceful"
+  }
+}
