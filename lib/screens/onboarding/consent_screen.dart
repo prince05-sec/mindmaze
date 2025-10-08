@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../utils/app_theme.dart';
 import '../auth/login_screen.dart';
 
@@ -55,28 +53,32 @@ class _ConsentScreenState extends State<ConsentScreen> {
                       _buildConsentSection(
                         icon: Icons.psychology,
                         title: 'Emotional & Mood Data',
-                        content: 'We collect your mood inputs, journal entries, and emotional check-ins to personalize your stories and track your wellness journey.',
+                        content:
+                            'We collect your mood inputs, journal entries, and emotional check-ins to personalize your stories and track your wellness journey.',
                       ),
                       const SizedBox(height: 24),
 
                       _buildConsentSection(
                         icon: Icons.auto_stories,
                         title: 'Story Interactions',
-                        content: 'Your story choices and progress are saved to provide continuity and improve future story recommendations.',
+                        content:
+                            'Your story choices and progress are saved to provide continuity and improve future story recommendations.',
                       ),
                       const SizedBox(height: 24),
 
                       _buildConsentSection(
                         icon: Icons.security,
                         title: 'Data Security',
-                        content: 'All data is encrypted and securely stored. We never share your personal information with third parties without your explicit consent.',
+                        content:
+                            'All data is encrypted and securely stored. We never share your personal information with third parties without your explicit consent.',
                       ),
                       const SizedBox(height: 24),
 
                       _buildConsentSection(
                         icon: Icons.volunteer_activism,
                         title: 'Professional Support',
-                        content: 'MindMaze is a wellness companion, not a replacement for professional mental health care. If you\'re in crisis, please seek immediate help.',
+                        content:
+                            'MindMaze is a wellness companion, not a replacement for professional mental health care. If you\'re in crisis, please seek immediate help.',
                       ),
                       const SizedBox(height: 32),
 

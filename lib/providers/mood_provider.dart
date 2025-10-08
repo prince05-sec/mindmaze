@@ -1,19 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import '../models/mood_model.dart';
+import '../utils/local_storage_service.dart';
+import '../utils/mood_prediction.dart';
 
 class MoodProvider with ChangeNotifier {
   List<MoodModel> _moodHistory = [];
   MoodModel? _currentMood;
   bool _isLoading = false;
+  MoodInsight? _latestInsight;
 
   List<MoodModel> get moodHistory => _moodHistory;
   MoodModel? get currentMood => _currentMood;
   bool get isLoading => _isLoading;
+  MoodInsight? get latestInsight => _latestInsight;
 
   final List<String> _availableEmojis = [
-    '😢', '😟', '😔', '😐', '🙂', '😊', '😄', '🤗', '😍', '🥰', '😇'
+    '😢',
+    '😟',
+    '😔',
+    '😐',
+    '🙂',
+    '😊',
+    '😄',
+    '🤗',
+    '😍',
+    '🥰',
+    '😇'
   ];
 
   List<String> get availableEmojis => _availableEmojis;
@@ -45,7 +57,7 @@ class MoodProvider with ChangeNotifier {
       _moodHistory.insert(0, mood);
 
       await _saveMoodToStorage();
-
+      _calculateInsight();
     } catch (e) {
       print('Error saving mood: $e');
     } finally {
@@ -57,13 +69,12 @@ class MoodProvider with ChangeNotifier {
   Future<void> _loadMoodHistory() async {
     try {
       _isLoading = true;
+      notifyListeners();
 
-      final prefs = await SharedPreferences.getInstance();
-      final moodHistoryJson = prefs.getStringList('mood_history') ?? [];
-
-      _moodHistory = moodHistoryJson
-          .map((jsonStr) => MoodModel.fromMap(json.decode(jsonStr)))
-          .toList();
+      // LocalStorageService.readList is synchronous and returns an empty list when no data
+      final stored = LocalStorageService.readList(LocalStorageService.moodBox);
+      _moodHistory =
+          stored.map<MoodModel>((m) => MoodModel.fromMap(m)).toList();
 
       if (_moodHistory.isNotEmpty) {
         _currentMood = _moodHistory.first;
@@ -74,6 +85,7 @@ class MoodProvider with ChangeNotifier {
         await _addDemoMoodData();
       }
 
+      _calculateInsight();
     } catch (e) {
       print('Error loading mood history: $e');
     } finally {
@@ -84,13 +96,10 @@ class MoodProvider with ChangeNotifier {
 
   Future<void> _saveMoodToStorage() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final moodHistoryJson = _moodHistory
-          .take(30) // Keep only last 30 entries
-          .map((mood) => json.encode(mood.toMap()))
-          .toList();
-
-      await prefs.setStringList('mood_history', moodHistoryJson);
+      await LocalStorageService.saveList(
+        LocalStorageService.moodBox,
+        _moodHistory.take(60).map((mood) => mood.toMap()).toList(),
+      );
     } catch (e) {
       print('Error saving mood to storage: $e');
     }
@@ -130,6 +139,7 @@ class MoodProvider with ChangeNotifier {
     }
 
     await _saveMoodToStorage();
+    _calculateInsight();
   }
 
   List<MoodModel> getMoodsByDateRange(DateTime start, DateTime end) {
@@ -142,11 +152,16 @@ class MoodProvider with ChangeNotifier {
     if (_moodHistory.isEmpty) return 5.0;
 
     final cutoff = DateTime.now().subtract(Duration(days: days));
-    final recentMoods = _moodHistory.where((mood) => mood.timestamp.isAfter(cutoff));
+    final recentMoods =
+        _moodHistory.where((mood) => mood.timestamp.isAfter(cutoff));
 
     if (recentMoods.isEmpty) return 5.0;
 
     final sum = recentMoods.fold(0, (sum, mood) => sum + mood.moodLevel);
     return sum / recentMoods.length;
+  }
+
+  void _calculateInsight() {
+    _latestInsight = MoodPrediction.analyze(_moodHistory);
   }
 }

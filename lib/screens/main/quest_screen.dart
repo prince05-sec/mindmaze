@@ -124,27 +124,74 @@ class _QuestScreenState extends State<QuestScreen>
         }
 
         if (questProvider.activeQuests.isEmpty) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('🎯', style: TextStyle(fontSize: 80)),
-                SizedBox(height: 16),
-                Text(
-                  'No active quests',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimaryColor,
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryColor.withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.emoji_events_outlined,
+                      size: 60,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Complete your mood check-in to get personalized quests',
-                  style: TextStyle(color: AppTheme.textSecondaryColor),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Ready for your quest?',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimaryColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Complete your mood check-in to unlock personalized wellness quests tailored to your current state.',
+                    style: TextStyle(
+                      color: AppTheme.textSecondaryColor,
+                      fontSize: 16,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton.icon(
+                    onPressed: () => Navigator.of(context).pushNamed('/mood-input'),
+                    icon: const Icon(Icons.mood),
+                    label: const Text('Check My Mood'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 4,
+                      shadowColor: AppTheme.primaryColor.withOpacity(0.3),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }
@@ -322,8 +369,17 @@ class _QuestScreenState extends State<QuestScreen>
               width: double.infinity,
               child: ElevatedButton(
                 // TODO: wire this to your provider method, e.g. questProvider.complete(userQuest)
-                onPressed: () {
-                  // Implement completion action
+                onPressed: () async {
+                  // Add completion animation
+                  final questProvider = context.read<QuestProvider>();
+                  await questProvider.completeQuest(userQuest.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Quest completed! 🎉'),
+                      backgroundColor: AppTheme.successColor,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
@@ -364,12 +420,12 @@ class _QuestScreenState extends State<QuestScreen>
         ),
         boxShadow: isUnlocked
             ? [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ]
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
             : null,
       ),
       child: Row(
@@ -400,7 +456,7 @@ class _QuestScreenState extends State<QuestScreen>
                   style: TextStyle(
                     fontSize: 14,
                     color:
-                    isUnlocked ? AppTheme.textSecondaryColor : Colors.grey,
+                        isUnlocked ? AppTheme.textSecondaryColor : Colors.grey,
                   ),
                 ),
               ],

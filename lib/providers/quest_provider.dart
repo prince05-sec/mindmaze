@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import 'dart:convert';
 import 'dart:math';
 import '../models/quest_model.dart';
@@ -8,6 +9,7 @@ class QuestProvider with ChangeNotifier {
   List<UserQuest> _activeQuests = [];
   List<UserQuest> _completedQuests = [];
   bool _isLoading = false;
+  final Uuid _uuid = const Uuid();
 
   List<UserQuest> get activeQuests => _activeQuests;
   List<UserQuest> get completedQuests => _completedQuests;
@@ -116,7 +118,6 @@ class QuestProvider with ChangeNotifier {
       if (_activeQuests.isEmpty && _completedQuests.isEmpty) {
         await _generateInitialQuests();
       }
-
     } catch (e) {
       print('Error loading quests: $e');
     } finally {
@@ -126,7 +127,7 @@ class QuestProvider with ChangeNotifier {
   }
 
   Future<void> _generateInitialQuests() async {
-    final random = Random();
+    // Removed unused variable 'random'
     final selectedQuests = _availableQuests.take(3).toList();
 
     for (int i = 0; i < selectedQuests.length; i++) {
@@ -149,24 +150,26 @@ class QuestProvider with ChangeNotifier {
     // Select quests based on mood
     if (moodLevel <= 3) {
       // Low mood - gentle, self-care quests
-      suitableQuests = _availableQuests.where((quest) =>
-      quest.category == 'Self-Care' ||
-          quest.category == 'Breathing' ||
-          quest.tags.contains('relaxation')
-      ).toList();
+      suitableQuests = _availableQuests
+          .where((quest) =>
+              quest.category == 'Self-Care' ||
+              quest.category == 'Breathing' ||
+              quest.tags.contains('relaxation'))
+          .toList();
     } else if (moodLevel <= 6) {
       // Neutral mood - mindfulness and reflection
-      suitableQuests = _availableQuests.where((quest) =>
-      quest.category == 'Mindfulness' ||
-          quest.category == 'Meditation'
-      ).toList();
+      suitableQuests = _availableQuests
+          .where((quest) =>
+              quest.category == 'Mindfulness' || quest.category == 'Meditation')
+          .toList();
     } else {
       // Good mood - active and social quests
-      suitableQuests = _availableQuests.where((quest) =>
-      quest.category == 'Movement' ||
-          quest.category == 'Social' ||
-          quest.category == 'Nature'
-      ).toList();
+      suitableQuests = _availableQuests
+          .where((quest) =>
+              quest.category == 'Movement' ||
+              quest.category == 'Social' ||
+              quest.category == 'Nature')
+          .toList();
     }
 
     // Ensure we have enough quests
@@ -176,7 +179,8 @@ class QuestProvider with ChangeNotifier {
 
     // Remove already active quests
     final activeQuestIds = _activeQuests.map((uq) => uq.quest.id).toSet();
-    suitableQuests = suitableQuests.where((q) => !activeQuestIds.contains(q.id)).toList();
+    suitableQuests =
+        suitableQuests.where((q) => !activeQuestIds.contains(q.id)).toList();
 
     // Add 2-3 new quests
     final questsToAdd = (suitableQuests..shuffle(random)).take(2).toList();
@@ -217,9 +221,8 @@ class QuestProvider with ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      final activeQuestsJson = _activeQuests
-          .map((quest) => json.encode(quest.toMap()))
-          .toList();
+      final activeQuestsJson =
+          _activeQuests.map((quest) => json.encode(quest.toMap())).toList();
       await prefs.setStringList('active_quests', activeQuestsJson);
 
       final completedQuestsJson = _completedQuests
@@ -227,20 +230,79 @@ class QuestProvider with ChangeNotifier {
           .map((quest) => json.encode(quest.toMap()))
           .toList();
       await prefs.setStringList('completed_quests', completedQuestsJson);
-
     } catch (e) {
       print('Error saving quests: $e');
     }
   }
 
+  Future<void> addCustomQuest(String moodTag, String description) async {
+    final quest = Quest(
+      id: 'ai_${_uuid.v4()}',
+      title: 'Daily Quest',
+      description: description,
+      category: _mapMoodToCategory(moodTag),
+      estimatedMinutes: 5,
+      icon: _mapMoodToIcon(moodTag),
+      tags: [moodTag, 'ai'],
+    );
+
+    final userQuest = UserQuest(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      userId: 'local_user',
+      quest: quest,
+      assignedAt: DateTime.now(),
+    );
+
+    _activeQuests.insert(0, userQuest);
+    await _saveQuests();
+    notifyListeners();
+  }
+
+  String _mapMoodToCategory(String moodTag) {
+    switch (moodTag) {
+      case 'sad':
+        return 'Gratitude';
+      case 'anxious':
+        return 'Grounding';
+      case 'angry':
+        return 'Release';
+      case 'happy':
+        return 'Kindness';
+      case 'calm':
+        return 'Mindfulness';
+      default:
+        return 'Reflection';
+    }
+  }
+
+  String _mapMoodToIcon(String moodTag) {
+    switch (moodTag) {
+      case 'sad':
+        return '💧';
+      case 'anxious':
+        return '🌀';
+      case 'angry':
+        return '🔥';
+      case 'happy':
+        return '🌞';
+      case 'calm':
+        return '🌿';
+      default:
+        return '✨';
+    }
+  }
+
   List<UserQuest> getQuestsByCategory(String category) {
-    return _activeQuests.where((quest) => quest.quest.category == category).toList();
+    return _activeQuests
+        .where((quest) => quest.quest.category == category)
+        .toList();
   }
 
   int getCompletedQuestsInLastDays(int days) {
     final cutoff = DateTime.now().subtract(Duration(days: days));
-    return _completedQuests.where((quest) =>
-    quest.completedAt != null && quest.completedAt!.isAfter(cutoff)
-    ).length;
+    return _completedQuests
+        .where((quest) =>
+            quest.completedAt != null && quest.completedAt!.isAfter(cutoff))
+        .length;
   }
 }

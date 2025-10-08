@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../../providers/mood_provider.dart';
-import '../../providers/quest_provider.dart';
-import '../../providers/story_provider.dart';
-import '../../providers/healing_tree_provider.dart';
 import '../../utils/app_theme.dart';
 
 class JourneyMapScreen extends StatefulWidget {
@@ -190,35 +186,5 @@ class _JourneyMapScreenState extends State<JourneyMapScreen>
   // 🔹 Placeholder: implement as you need
   Widget _buildAchievementsTab() {
     return const Center(child: Text("Achievements Tab"));
-  }
-
-  Widget _buildStatCard(
-      String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
-          Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          Text(title, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    return "${date.day}/${date.month}/${date.year}";
   }
 }

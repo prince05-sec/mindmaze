@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import '../models/healing_tree_model.dart';
+import '../utils/local_storage_service.dart';
 
 class HealingTreeProvider with ChangeNotifier {
   HealingTreeModel? _healingTree;
@@ -19,13 +18,12 @@ class HealingTreeProvider with ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      final prefs = await SharedPreferences.getInstance();
-      final treeJson = prefs.getString('healing_tree');
+      final stored =
+          await LocalStorageService.readMap(LocalStorageService.treeBox);
 
-      if (treeJson != null) {
-        _healingTree = HealingTreeModel.fromMap(json.decode(treeJson));
+      if (stored != null) {
+        _healingTree = HealingTreeModel.fromMap(stored);
       } else {
-        // Create initial tree
         _healingTree = HealingTreeModel(
           userId: 'demo_user',
           state: TreeState.sprouting,
@@ -35,7 +33,6 @@ class HealingTreeProvider with ChangeNotifier {
         );
         await _saveHealingTree();
       }
-
     } catch (e) {
       print('Error loading healing tree: $e');
     } finally {
@@ -48,8 +45,10 @@ class HealingTreeProvider with ChangeNotifier {
     if (_healingTree == null) return;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('healing_tree', json.encode(_healingTree!.toMap()));
+      await LocalStorageService.saveMap(
+        LocalStorageService.treeBox,
+        _healingTree!.toMap(),
+      );
     } catch (e) {
       print('Error saving healing tree: $e');
     }
@@ -59,7 +58,20 @@ class HealingTreeProvider with ChangeNotifier {
     required String eventType,
     int experienceGain = 10,
   }) async {
-    if (_healingTree == null) return;
+    // Ensure we have a healing tree to update
+    if (_healingTree == null) {
+      _healingTree = HealingTreeModel(
+        userId: 'demo_user',
+        state: TreeState.sprouting,
+        level: 1,
+        experience: 0,
+        lastUpdated: DateTime.now(),
+      );
+    }
+
+    // Basic validation
+    experienceGain = experienceGain.clamp(0, 1000);
+    _healingTree = _healingTree!.copyWith();
 
     int newExperience = _healingTree!.experience + experienceGain;
     int newLevel = _healingTree!.level;
